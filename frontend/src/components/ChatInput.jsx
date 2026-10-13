@@ -99,12 +99,21 @@ function ChatInput() {
 
     dispatch(addMessage({ role: "user", content: value.trim() }))
     setValue("")
-    const data = await sendMessage(formData)
-    dispatch(setIsLoading(false))
-    setSelectedFile(null)
-    dispatch(setArtifacts(data.artifacts || []))
-    dispatch(addMessage({ role: "assistant", content: data?.answer, images: data?.images }))
-    console.log(data)
+    try {
+      const data = await sendMessage(formData)
+      if (data) {
+        dispatch(setArtifacts(data.artifacts || []))
+        dispatch(addMessage({ role: "assistant", content: data.answer || "No response generated.", images: data.images }))
+      } else {
+        dispatch(addMessage({ role: "assistant", content: "⚠️ Request failed. Make sure you have set a valid GROQ_API_KEY in backend/services/agent/.env." }))
+      }
+    } catch (err) {
+      console.error(err)
+      dispatch(addMessage({ role: "assistant", content: "⚠️ Error sending message. Please check server logs." }))
+    } finally {
+      dispatch(setIsLoading(false))
+      setSelectedFile(null)
+    }
   }
 
   const agents = [

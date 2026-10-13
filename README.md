@@ -1,241 +1,193 @@
-# Cortex AI
+# CortexAI 🧠⚡
 
-Cortex AI is a full-stack AI platform built with a React frontend and a modular Node.js backend. The project is organized around a frontend application, an API gateway, and independent backend services for authentication, chat, agents, and billing.
+> **An Autonomous Multi-Agent AI Platform & Microservices Orchestrator**  
+> Powered by LangChain, LangGraph, Multi-Model Dynamic Routing, and a Distributed Node.js Microservices Architecture.
 
-> **Project status:** Early development. APIs, environment variables, and service implementations may change as the platform evolves.
+---
 
-## Features
+## 🚀 Overview
 
-- React-based web application powered by Vite
-- Google authentication through Firebase
-- Redux Toolkit for client-side state management
-- Markdown rendering and syntax highlighting for AI responses
-- Monaco Editor integration for an in-browser coding experience
-- Express API gateway for routing frontend requests
-- Protected API routes using cookie-based authentication middleware
-- Independent backend services for:
-  - Authentication
-  - Chat
-  - AI agents
-  - Billing
-- Redis support for shared backend infrastructure
-- Docker support for the gateway and Redis
-- CORS, request logging, and service proxying through the gateway
+**CortexAI** is a production-grade, distributed AI platform designed to deliver specialized autonomous agents through an intelligent microservices architecture. It dynamically routes user requests across specialized LLMs (Groq, DeepSeek via OpenRouter, and Google Gemini), integrates vector retrieval for PDF intelligence, and generates downloadable artifacts (codebases, slide presentations, and formatted documents) stored in AWS S3 with local offline fallbacks.
 
-## Architecture
+---
 
-```text
-Cortex-AI/
-├── frontend/              # React + Vite client application
-├── backend/
-│   ├── gateway/           # Express API gateway
-│   ├── services/
-│   │   ├── auth/          # Authentication service
-│   │   ├── chat/          # Chat service
-│   │   ├── agent/         # AI agent service
-│   │   └── billing/       # Billing service
-│   ├── shared/             # Shared backend code
-│   ├── docker-compose.yml  # Local Redis service
-│   └── package.json        # Shared backend dependencies
-└── README.md
+## 🌟 Key Features
+
+### 🤖 Specialized Autonomous Agents
+* **💬 General Chat Agent:** High-throughput, sub-second latency conversational assistant powered by **Groq LPUs**.
+* **💻 Coding Agent:** Generates, reviews, and refactors multi-file projects powered by **DeepSeek (OpenRouter)** with self-healing JSON output parsers, syntax-guardrails, and Monaco Editor integration.
+* **📊 Presentation Agent (PPT):** Programmatically constructs multi-slide presentation decks (`.pptx`) and generates shareable download links.
+* **📄 Document Agent (PDF):** Compiles structured reports and documentation into downloadable PDF artifacts.
+* **🔍 Document Intelligence (PDF RAG):** Ingests PDFs into **Qdrant Vector DB** using Google Generative AI Embeddings for hallucination-resistant semantic question answering.
+* **👁️ Vision Analyzer:** Multimodal image inspection and diagram breakdown powered by **Google Gemini 2.5 Flash**.
+* **🌐 Web Search Agent:** Real-time web grounding and synthesis powered by **Tavily AI**.
+
+### 🏗️ Microservices Architecture
+* **API Gateway (`:8000`):** Single entry point handling authentication verification, Redis-backed rate-limiting, CORS, and reverse-proxy routing.
+* **Auth Service (`:8001`):** User management, Google OAuth via Firebase Admin SDK, and secure HTTP-only cross-origin session cookies.
+* **Chat Service (`:8002`):** Persistent conversation histories, thread management, and message storage in MongoDB.
+* **Agent Service (`:8003`):** StateGraph workflow execution using LangGraph, dynamic LLM dispatch, S3 presigned asset delivery, and vector search.
+* **Billing Service (`:8004`):** Razorpay payment gateway integration, subscription plans, and atomic credit decrement per AI invocation.
+* **Frontend (`:5173` / `:5174`):** Modern React 18 SPA built with Vite, Tailwind CSS, Redux Toolkit, Monaco Editor, and interactive artifact viewer for live code and document previews.
+
+---
+
+## 🏛️ System Architecture
+
+```mermaid
+flowchart TD
+    User["Client (React 18 / Vite SPA)"]
+    Gateway["API Gateway (:8000)"]
+    Redis[("Redis (Sessions & Rate Limiting)")]
+    MongoDB[("MongoDB Atlas")]
+
+    User -->|HTTP / REST| Gateway
+    Gateway <-->|Session Verification| Redis
+
+    subgraph Microservices["Backend Services"]
+        Auth["Auth Service (:8001)"]
+        Chat["Chat Service (:8002)"]
+        Agent["Agent Service (:8003)"]
+        Billing["Billing Service (:8004)"]
+    end
+
+    Gateway -->|/api/auth| Auth
+    Gateway -->|/api/chat| Chat
+    Gateway -->|/api/agent| Agent
+    Gateway -->|/api/billing| Billing
+
+    Auth & Chat & Agent & Billing --> MongoDB
+
+    subgraph AI_Providers["AI & Storage Integrations"]
+        Groq["Groq (Chat & Search)"]
+        OpenRouter["OpenRouter / DeepSeek (Coding)"]
+        Gemini["Google Gemini 2.5 Flash (Vision & Embeddings)"]
+        Qdrant[("Qdrant Cloud (Vector DB)")]
+        S3["AWS S3 (Artifacts & Media)"]
+    end
+
+    Agent --> Groq
+    Agent --> OpenRouter
+    Agent --> Gemini
+    Agent --> Qdrant
+    Agent --> S3
 ```
 
-The frontend communicates with the backend through the gateway. The gateway exposes the following routes:
+---
+
+## 🛣️ Gateway Routing Table
 
 | Route | Purpose | Authentication |
-| --- | --- | --- |
-| `/api/auth` | Authentication operations | Public/service-dependent |
-| `/api/chat` | Chat functionality | Required |
-| `/api/agent` | AI agent functionality | Required |
-| `/api/billing` | Billing functionality | Required |
-| `/api/me` | Retrieve the current user | Required |
+|---|---|---|
+| `/api/auth` | Login, Google OAuth token verification, logout | Public / Service-dependent |
+| `/api/me` | Fetch active authenticated user profile | Required (Session Cookie) |
+| `/api/chat` | Create conversations, fetch message history | Required (Session Cookie) |
+| `/api/agent` | Execute AI agents (Chat, Coding, PPT, PDF, Vision, RAG) | Required (Session Cookie) |
+| `/api/billing` | Razorpay order creation, payment verification, credits | Required (Session Cookie) |
 
-## Tech Stack
+---
 
-### Frontend
+## 📦 Tech Stack
 
-- React 19
-- Vite
-- Tailwind CSS
-- Redux Toolkit and React Redux
-- Firebase Authentication
-- Axios
-- React Markdown with GitHub-Flavored Markdown support
-- React Syntax Highlighter
-- Monaco Editor
-- Motion
-- Lucide React and React Icons
+| Domain | Technologies |
+|---|---|
+| **Frontend** | React 18, Vite, Redux Toolkit, Tailwind CSS, Monaco Editor, React Markdown, Axios |
+| **Backend & Microservices** | Node.js, Express.js, Docker, Docker Compose, HTTP-Proxy |
+| **AI & Orchestration** | LangChain, LangGraph (StateGraph), Groq SDK, Google GenAI SDK |
+| **Databases & Cache** | MongoDB (Mongoose), Redis (ioredis), Qdrant Cloud (Vector Search) |
+| **Cloud & Storage** | AWS S3 (Presigned URLs & Local Fallback), AWS IAM |
+| **Auth & Payments** | Firebase Auth (Admin SDK), Razorpay Payments |
 
-### Backend
+---
 
-- Node.js
-- Express
-- ES modules
-- Express HTTP Proxy
-- Redis via ioredis
-- Firebase/authentication integration
-- Morgan request logging
-- Docker and Docker Compose
+## 📂 Project Structure
 
-## Prerequisites
+```text
+cortexAI/
+├── frontend/                     # React 18 + Vite client application
+├── backend/
+│   ├── gateway/                  # API Gateway (Port 8000)
+│   ├── shared/                   # Shared Redis clients & utility modules
+│   └── services/
+│       ├── auth/                 # Authentication service (Port 8001)
+│       ├── chat/                 # Conversation & message service (Port 8002)
+│       ├── agent/                # Multi-Agent LangGraph engine (Port 8003)
+│       └── billing/              # Razorpay billing & credits (Port 8004)
+├── CREDENTIALS_AND_DEPLOYMENT_GUIDE.md  # Step-by-step API keys & cloud setup guide
+├── start-dev.js                  # Master concurrent runner for all services
+└── package.json                  # Root orchestration package
+```
 
-Install the following before starting local development:
+---
 
-- Node.js 20 or newer
-- npm
-- Docker Desktop or Docker Engine with Docker Compose
-- A Firebase project configured for Google sign-in
+## ⚡ Quick Start
 
-## Getting Started
+### 1. Prerequisites
+* **Node.js** v18+ and **npm**
+* **MongoDB** (local `mongodb://localhost:27017` or MongoDB Atlas)
+* **Redis** (local `redis://localhost:6379`, local Docker container, or Upstash)
 
-### 1. Clone the repository
-
+### 2. Clone & Install Dependencies
 ```bash
 git clone https://github.com/viditsharma1405/Cortex-AI.git
 cd Cortex-AI
+
+# Install root dependencies
+npm install
+
+# Install all microservices dependencies
+npm run install:all
 ```
 
-### 2. Install frontend dependencies
+### 3. Configure Environment Variables
+Copy the `.env.example` templates in each service directory and populate your credentials:
 
 ```bash
-cd frontend
-npm install
+cp frontend/.env.example frontend/.env
+cp backend/gateway/.env.example backend/gateway/.env
+cp backend/services/auth/.env.example backend/services/auth/.env
+cp backend/services/chat/.env.example backend/services/chat/.env
+cp backend/services/agent/.env.example backend/services/agent/.env
+cp backend/services/billing/.env.example backend/services/billing/.env
 ```
 
-### 3. Start the frontend
+> 📖 **Need API keys?** See [CREDENTIALS_AND_DEPLOYMENT_GUIDE.md](./CREDENTIALS_AND_DEPLOYMENT_GUIDE.md) for step-by-step instructions to obtain free-tier keys for Firebase, Groq, OpenRouter, Gemini, Tavily, Qdrant, and Razorpay.
 
+### 4. Run Everything in Development Mode
+Start all 6 microservices concurrently with a single command:
 ```bash
 npm run dev
 ```
 
-The Vite development server will print the local URL in the terminal, normally `http://localhost:5173`.
+This launches:
+* **Frontend:** `http://localhost:5173` (or `5174`)
+* **API Gateway:** `http://localhost:8000`
+* **Auth Service:** `http://localhost:8001`
+* **Chat Service:** `http://localhost:8002`
+* **Agent Service:** `http://localhost:8003`
+* **Billing Service:** `http://localhost:8004`
 
-### 4. Install backend dependencies
+---
 
-From the repository root:
+## 🚢 Production Deployment
 
+For full cloud deployment details (AWS S3, CloudFront, EC2, ECS Fargate, ALB, and DNS), refer to the comprehensive [CREDENTIALS_AND_DEPLOYMENT_GUIDE.md](./CREDENTIALS_AND_DEPLOYMENT_GUIDE.md).
+
+### Docker Deployment
+Each service includes a production-ready `Dockerfile`:
 ```bash
-cd backend
-npm install
+# Build Gateway
+docker build -t cortex-gateway -f backend/gateway/Dockerfile backend/
 
-cd gateway
-npm install
+# Build Services
+docker build -t cortex-auth -f backend/services/auth/Dockerfile backend/
+docker build -t cortex-chat -f backend/services/chat/Dockerfile backend/
+docker build -t cortex-agent -f backend/services/agent/Dockerfile backend/
+docker build -t cortex-billing -f backend/services/billing/Dockerfile backend/
 ```
 
-### 5. Start Redis
+---
 
-From the `backend` directory:
+## 🛡️ License
 
-```bash
-docker compose up -d redis
-```
-
-Redis is exposed on port `6379` by default.
-
-### 6. Configure the gateway
-
-Create `backend/gateway/.env` with values appropriate for your local environment:
-
-```env
-PORT=8000
-FRONTEND_URL=http://localhost:5173
-AUTH_SERVICE=http://localhost:<auth-service-port>
-CHAT_SERVICE=http://localhost:<chat-service-port>
-AGENT_SERVICE=http://localhost:<agent-service-port>
-BILLING_SERVICE=http://localhost:<billing-service-port>
-```
-
-The service URLs must match the ports used by the corresponding backend services. Each service may require additional environment variables; check its source and package configuration before starting it.
-
-### 7. Start the gateway
-
-```bash
-cd backend/gateway
-npm run dev
-```
-
-For a production-style start:
-
-```bash
-npm start
-```
-
-The gateway listens on the port configured by `PORT` and defaults to the container port `8000` when using the provided Dockerfile.
-
-## Available Scripts
-
-### Frontend
-
-Run these commands from `frontend/`:
-
-```bash
-npm run dev       # Start the Vite development server
-npm run build     # Create a production build
-npm run preview   # Preview the production build locally
-npm run lint      # Run ESLint
-```
-
-### Gateway
-
-Run these commands from `backend/gateway/`:
-
-```bash
-npm run dev       # Start the gateway with Nodemon
-npm start         # Start the gateway with Node.js
-```
-
-## Docker
-
-The gateway includes a Dockerfile that installs backend dependencies, copies the gateway and shared code, and exposes port `8000`.
-
-To build the gateway image from the `backend` directory:
-
-```bash
-docker build -f gateway/Dockerfile -t cortex-ai-gateway .
-```
-
-To run the image:
-
-```bash
-docker run --env-file gateway/.env -p 8000:8000 cortex-ai-gateway
-```
-
-Redis can be started independently with:
-
-```bash
-docker compose up -d redis
-```
-
-## Environment Variables
-
-Do not commit credentials, Firebase configuration secrets, tokens, or production service URLs. Store local configuration in `.env` files and add any project-specific secret files to `.gitignore`.
-
-The gateway currently expects:
-
-- `PORT` — gateway listening port
-- `FRONTEND_URL` — allowed frontend origin for CORS
-- `AUTH_SERVICE` — authentication service base URL
-- `CHAT_SERVICE` — chat service base URL
-- `AGENT_SERVICE` — agent service base URL
-- `BILLING_SERVICE` — billing service base URL
-
-The frontend also requires the Firebase configuration used by `frontend/utils/firebase`. Configure those values according to your Firebase project setup.
-
-## Development Notes
-
-- Start Redis before running services that depend on it.
-- Start the backend services before sending requests through the gateway.
-- Use the gateway as the frontend API entry point rather than calling internal services directly.
-- Keep service-specific environment variables close to the service that consumes them.
-- Run `npm run lint` and `npm run build` in the frontend before opening a pull request.
-
-## Contributing
-
-1. Create a feature branch from `main`.
-2. Make focused changes and add or update documentation when behavior changes.
-3. Run the relevant lint, build, and service checks locally.
-4. Open a pull request with a clear description of the change.
-
-## License
-
-No project license has been declared yet. Add a `LICENSE` file before distributing Cortex AI or accepting external contributions under defined licensing terms.
+This project is licensed under the MIT License.

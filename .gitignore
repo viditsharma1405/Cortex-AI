@@ -47,6 +47,8 @@ node_modules/
 .env.*
 **/.env
 **/.env.*
+!.env.example
+!**/.env.example
 
 # =========================
 # Logs
@@ -90,15 +92,23 @@ Thumbs.db
 *.pem
 
 # =========================
-# Firebase
+# Firebase & Secrets
 # =========================
 serviceAccountKey.json
+**/serviceAccountKey.json
 firebase-adminsdk*.json
+**/firebase-adminsdk*.json
 
 # =========================
 # Docker
 # =========================
 .dockerignore
+
+# =========================
+# Uploads & Media
+# =========================
+uploads/
+**/uploads/
 
 # =========================
 # Misc

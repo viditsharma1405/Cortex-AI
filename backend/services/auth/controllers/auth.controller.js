@@ -39,10 +39,11 @@ export const login = async (req, res) => {
 
 
 
+        const isProduction = process.env.NODE_ENV === "production";
         res.cookie("session", sessionId, {
             httpOnly: true,
-            secure: false,
-            sameSite: "strict",
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax",
             maxAge: 7 * 24 * 60 * 60 * 1000
         })
 
@@ -54,12 +55,60 @@ export const login = async (req, res) => {
 }
 
 
+export const devLogin = async (req, res) => {
+    try {
+        let user = await User.findOne({ email: "dev@cortexai.local" })
+        if (!user) {
+            user = await User.create({
+                firebaseUid: "dev-local-user",
+                name: "Developer",
+                email: "dev@cortexai.local",
+                avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=cortex",
+                credits: 100,
+                totalCredits: 100,
+                plan: "free"
+            })
+        }
+
+        const sessionId = crypto.randomUUID()
+        await redis.set(`user-session-${user?._id}`, sessionId, "EX", 7 * 24 * 60 * 60)
+        await redis.set(`session-${sessionId}`, JSON.stringify({
+            userId: user._id,
+            name: user.name,
+            email: user.email,
+            avatar: user.avatar,
+            plan: user.plan,
+            credits: user.credits,
+            totalCredits: user.totalCredits,
+            planExpiresAt: user.planExpiresAt
+        }), "EX", 7 * 24 * 60 * 60)
+
+        const isProduction = process.env.NODE_ENV === "production";
+        res.cookie("session", sessionId, {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax",
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        })
+
+        return res.status(200).json(user)
+    } catch (error) {
+        return res.status(500).json({ message: `dev login error ${error}` })
+    }
+}
+
+
 export const logOut = async (req, res) => {
     try {
         const sessionId = req.cookies?.session
         await redis.del(`session-${sessionId}`)
 
-        res.clearCookie("session")
+        const isProduction = process.env.NODE_ENV === "production";
+        res.clearCookie("session", {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax"
+        })
         return res.status(200).json({ message: "logout successfully" })
     } catch (error) {
         return res.status(500).json({ message: `logout error ${error}` })

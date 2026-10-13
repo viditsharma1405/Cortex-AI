@@ -1,0 +1,10 @@
+{
+  "name": "cortex-ai",
+  "version": "1.0.0",
+  "description": "CortexAI Fullstack Platform",
+  "type": "module",
+  "scripts": {
+    "dev": "node start-dev.js",
+    "start": "node start-dev.js"
+  }
+}

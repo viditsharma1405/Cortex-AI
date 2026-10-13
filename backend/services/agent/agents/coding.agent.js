@@ -1,6 +1,7 @@
 import { checkAgentLimit } from "../config/agentLimit.js"
 import { getModel } from "../config/llmModels.js"
 import { deductCredits } from "../utils/deductCredits.js"
+import { parseJsonFromLlm } from "../utils/cleanJson.js"
 
 export const codingAgent=async (state) => {
 try {
@@ -23,8 +24,8 @@ DOCUMENTATION
 User Request:
 ${state.prompt}
     `)
-    const intent=intentRes.content
-    if(intent=="CODE_GENERATION"){
+    const intent = (intentRes.content || "").trim()
+    if(intent.includes("CODE_GENERATION")){
         const prompt=`
         You are CortexAI Coding Agent.
 
@@ -91,7 +92,20 @@ ${state.prompt}
         ` 
         const res=await llm.invoke(prompt)
         console.log(res)
-        const data=JSON.parse(res.content)
+        let data
+        try {
+            data = parseJsonFromLlm(res.content)
+        } catch (parseErr) {
+            console.error("Failed to parse JSON, using raw fallback:", parseErr)
+            data = {
+                files: [
+                    {
+                        name: "code.txt",
+                        content: res.content
+                    }
+                ]
+            }
+        }
         await deductCredits(state.userId,"coding")
         
         return {

@@ -11,9 +11,22 @@ import morgan from "morgan"
 const port =process.env.PORT
 
 const app=express()
+app.set("trust proxy", 1)
+const allowedOrigins = [
+    process.env.FRONTEND_URL,
+    "http://localhost:5173",
+    "http://localhost:5174"
+].filter(Boolean);
+
 app.use(cors({
-    origin:process.env.FRONTEND_URL,
-    credentials:true
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error("Not allowed by CORS"));
+        }
+    },
+    credentials: true
 }))
 app.use(morgan("dev"))
 app.use(cookieParser())
