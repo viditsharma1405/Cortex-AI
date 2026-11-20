@@ -56,7 +56,10 @@ flowchart TD
     Gateway -->|/api/agent| Agent
     Gateway -->|/api/billing| Billing
 
-    Auth & Chat & Agent & Billing --> MongoDB
+    Auth --> MongoDB
+    Chat --> MongoDB
+    Agent --> MongoDB
+    Billing --> MongoDB
 
     subgraph AI_Providers["AI & Storage Integrations"]
         Groq["Groq (Chat & Search)"]
@@ -103,7 +106,7 @@ flowchart TD
 ## 📂 Project Structure
 
 ```text
-cortexAI/
+Cortex-AI/
 ├── frontend/                     # React 18 + Vite client application
 ├── backend/
 │   ├── gateway/                  # API Gateway (Port 8000)
